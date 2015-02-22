@@ -1,9 +1,10 @@
 <?php
 /*
-Version: 2.0.2 + WPEngine mods
+Version: 2.0.3 + WPEngine mods
 Based on: http://wordpress.org/extend/plugins/memcached/
+Plugin URI: http://github.com/mgmartel/memcached-wpengine
 Original Authors: Ryan Boren, Denis de Bernardy, Matt Martz
-Modifications: Jason Cohen, Sean O'Shaughnessy
+Modifications: Jason Cohen, Sean O'Shaughnessy, Mike Martel
 
 Install this file to wp-content/object-cache.php
  */
@@ -128,7 +129,7 @@ class WP_Object_Cache {
         }
 
         $mc =& $this->get_mc($group);
-        $expire = ($expire == 0) ? $this->default_expiration : $expire;
+        $expire = ($expire == 0) ? $this->default_expiration : $expire + time();
         $result = $mc->add($key, $data, false, $expire);
 
         if ( false !== $result ) {
@@ -317,7 +318,7 @@ class WP_Object_Cache {
         if ( in_array($group, $this->no_mc_groups) )
             return true;
 
-        $expire = ($expire == 0) ? $this->default_expiration : $expire;
+        $expire = ($expire == 0) ? $this->default_expiration : $expire + time();
         $mc =& $this->get_mc($group);
         $result = $mc->set($key, $data, false, $expire);
 
@@ -469,5 +470,9 @@ class WP_Object_Cache {
 
         $this->cache_hits =& $this->stats['get'];
         $this->cache_misses =& $this->stats['add'];
+
+        // If default expiration is not forever (0), then convert into timestamp
+        if ( $this->default_expiration !== 0 )
+            $this->default_expiration += time();
     }
 }
